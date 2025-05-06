@@ -1,0 +1,24 @@
+{
+  "name": "sharmaz-me-mcp",
+  "version": "0.1.0",
+  "description": "",
+  "homepage": "https://github.com/Sharmaz/sharmaz-me-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Sharmaz/sharmaz-me-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sharmaz/sharmaz-me-mcp.git"
+  },
+  "license": "MIT",
+  "author": "Ivan Robles <irae45@gmail.com>",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "zod": "^3.24.4"
+  }
+}
