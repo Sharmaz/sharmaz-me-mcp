@@ -222,5 +222,72 @@ server.tool(
   }
 );
 
+server.tool(
+  'delete-project',
+  'Tool to delete a project at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    projectId: z.string().describe("ID of the project to delete"),
+  },
+
+  async ({ name, projectId }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const deletedProject = await fetch(`${config.apiUrl}/api/v1/projects/${projectId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      }
+    });
+
+    const deletedProjectData = await deletedProject.json();
+
+    if (deletedProjectData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The project ${name} was not deleted`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `The project ${name} was deleted`
+        }
+      ]
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
