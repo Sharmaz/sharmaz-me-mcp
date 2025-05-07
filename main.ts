@@ -140,5 +140,87 @@ server.tool(
   }
 );
 
+server.tool(
+  'update-project',
+  'Tool to update a project at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    description: z.string().describe("Description of the project to create"),
+    demoLink: z.string().describe("Demo link of the project to create"),
+    githubLink: z.string().describe("Github link of the project to create"),
+    imageLink: z.string().describe("Image link of the project to create"),
+    tagList: z.array(z.string()).describe("Tags of the project to create"),
+    projectId: z.string().describe("ID of the project to update"),
+  },
+
+  async ({ name, description, demoLink, githubLink, imageLink, tagList, projectId }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const updatedProject = await fetch(`${config.apiUrl}/api/v1/projects/${projectId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        githubLink,
+        demoLink,
+        imageLink,
+        tags: {
+          list: tagList,
+        }
+      }),
+    });
+
+    const updatedProjectData = await updatedProject.json();
+
+    if (updatedProjectData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The project ${name} was not updated`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(updatedProjectData, null, 2)
+        }
+      ]
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
