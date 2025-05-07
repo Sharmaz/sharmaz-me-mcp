@@ -7,8 +7,8 @@ const server = new McpServer({
   version: "0.1.0",
 });
 
-if (!process.env.API_KEY || !process.env.API_URL || !process.env.USER_ID) {
-  console.error('API_KEY, API_URL, and USER_ID are required but not set in the environment variables.');
+if (!process.env.API_KEY || !process.env.API_URL || !process.env.USER_ID || !process.env.USER_EMAIL || !process.env.USER_PASSWORD) {
+  console.error('API_KEY, API_URL, USER_ID, USER_EMAIL, and USER_PASSWORD are required but not set in the environment variables.');
   process.exit(1);
 }
 
@@ -16,6 +16,8 @@ const config = {
   apiKey: process.env.API_KEY,
   apiUrl: process.env.API_URL,
   userId: process.env.USER_ID,
+  userEmail: process.env.USER_EMAIL,
+  userPassword: process.env.USER_PASSWORD,
 };
 
 server.tool(
@@ -55,7 +57,88 @@ server.tool(
       ]
     }
   }
-)
+);
+
+server.tool(
+  'create-project',
+  'Tool to create a project at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    description: z.string().describe("Description of the project to create"),
+    demoLink: z.string().describe("Demo link of the project to create"),
+    githubLink: z.string().describe("Github link of the project to create"),
+    imageLink: z.string().describe("Image link of the project to create"),
+    tagList: z.array(z.string()).describe("Tags of the project to create"),
+  },
+
+  async ({ name, description, demoLink, githubLink, imageLink, tagList }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const createProject = await fetch(`${config.apiUrl}/api/v1/projects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        githubLink,
+        demoLink,
+        imageLink,
+        tags: {
+          list: tagList,
+        }
+      }),
+    });
+
+    const createdProjectData = await createProject.json();
+
+    if (createdProjectData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The project ${name} was not created`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(createdProjectData, null, 2)
+        }
+      ]
+    }
+  }
+);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
