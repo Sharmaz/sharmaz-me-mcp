@@ -289,5 +289,235 @@ server.tool(
   }
 );
 
+server.tool(
+  'create-job',
+  'Tool to create a job at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    dateStarted: z.string().describe("Date started of the project to create"),
+    dateEnded: z.string().describe("Date ended of the project to create"),
+    description: z.string().describe("Description of the project to create"),
+    role: z.string().describe("Role of the project to create"),
+    detailList: z.array(z.string()).describe("Tags of the project to create"),
+  },
+
+  async ({ name, description, dateStarted, dateEnded, role, detailList }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const createJob = await fetch(`${config.apiUrl}/api/v1/jobs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        dateStarted,
+        dateEnded,
+        role,
+        details: {
+          list: detailList,
+        }
+      }),
+    });
+
+    const createdJobData = await createJob.json();
+
+    if (createdJobData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The job ${name} was not created`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(createdJobData, null, 2)
+        }
+      ]
+    }
+  }
+);
+
+server.tool(
+  'update-job',
+  'Tool to update a job at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    dateStarted: z.string().describe("Date started of the project to create"),
+    dateEnded: z.string().describe("Date ended of the project to create"),
+    description: z.string().describe("Description of the project to create"),
+    role: z.string().describe("Role of the project to create"),
+    detailList: z.array(z.string()).describe("Tags of the project to create"),
+    jobId: z.string().describe("ID of the project to update"),
+  },
+
+  async ({ name, description, dateStarted, dateEnded, role, detailList, jobId }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const updatedJob = await fetch(`${config.apiUrl}/api/v1/jobs/${jobId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        dateStarted,
+        dateEnded,
+        role,
+        details: {
+          list: detailList,
+        }
+      }),
+    });
+
+    const updatedJobData = await updatedJob.json();
+
+    if (updatedJobData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The job ${name} was not updated`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(updatedJobData, null, 2)
+        }
+      ]
+    }
+  }
+);
+
+server.tool(
+  'delete-job',
+  'Tool to delete a job at portfolio using the Sharmaz API',
+  {
+    name: z.string().describe("Name of the project to create"),
+    jobId: z.string().describe("ID of the project to delete"),
+  },
+
+  async ({ name, jobId }) => {
+    const loginData = {
+      email: config.userEmail,
+      password: config.userPassword,
+    }
+
+    const data = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const userData = await data.json();
+
+    if (userData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `user data not found`
+          }
+        ]
+      }
+    }
+
+    const deletedJob = await fetch(`${config.apiUrl}/api/v1/jobs/${jobId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      }
+    });
+
+    const deletedJobData = await deletedJob.json();
+
+    if (deletedJobData.length === 0) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `The job ${name} was not deleted`
+          }
+        ]
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `The job ${name} was deleted`
+        }
+      ]
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
