@@ -23,8 +23,7 @@ Add this to your `claude_desktop_config.json`:
   "command": "npx",
   "args": [
     "-y",
-    "tsx",
-    "[your local directory]/sharmaz-me-mcp/main.ts"
+    "[your local directory]/sharmaz-me-mcp/bin/cli.js"
   ],
   "env": {
     "API_KEY": "****************",

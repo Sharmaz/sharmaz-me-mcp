@@ -13,15 +13,22 @@
   "license": "MIT",
   "author": "Ivan Robles <irae45@gmail.com>",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+  "sharmaz-mcp": "./bin/cli.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@types/node": "^22.15.14"
+    "@types/node": "^22.15.14",
+    "typescript": "^5.8.3"
   }
 }
